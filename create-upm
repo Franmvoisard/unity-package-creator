@@ -1,0 +1,115 @@
+#!/bin/bash
+
+function start_package() {
+    echo "Welcome to the Unity Package Creator!"
+    echo "Package Name:"
+    read package_name
+    echo "Package Version:"
+    read package_version
+    echo "Package Display Name:"
+    read package_display_name
+    echo "Package Description:"
+    read package_description
+    echo "Package Unity Version:"
+    read package_unity_version
+    echo "Package Unity Release:"
+    read package_unity_release
+    echo "Package Author Name:"
+    read package_author
+    echo "Package Author Email:"
+    read package_author_email
+    echo "Package Author Website:"
+    read package_author_url
+}
+
+function create_folders() {
+    package_bundle="com.pocketduck.$package_name"
+    mkdir "$package_bundle"
+    cd $package_bundle
+    mkdir "Editor"
+    mkdir "Runtime"
+    mkdir "Tests"
+    cd "Tests"
+    mkdir "Editor"
+    mkdir "Runtime"
+    cd ..
+    touch "README.md"
+    touch "LICENSE"
+    touch "CHANGELOG.md"
+    touch "package.json"
+}
+
+function create_package_json() {
+    echo "Creating package.json"
+    echo "{" > package.json
+    echo "    \"name\": \"$package_bundle\","| tr '[:upper:]' '[:lower:]' >> package.json
+    echo "    \"version\": \"$package_version\"," >> package.json
+    echo "    \"displayName\": \"$package_display_name\"," >> package.json
+    echo "    \"description\": \"$package_description\"," >> package.json
+    echo "    \"unity\": \"$package_unity_version\"," >> package.json
+    echo "    \"unityRelease\": \"$package_unity_version_release\"," >> package.json
+    echo "    \"author\": {" >> package.json
+    echo "        \"name\": \"$package_author\"," >> package.json
+    echo "        \"email\": \"$package_author_email\"," >> package.json
+    echo "        \"url\": \"$package_author_url\"" >> package.json
+    echo "        }," >> package.json
+    echo "    \"dependencies\": {" >> package.json
+    echo "     }" >> package.json
+    echo "}" >> package.json
+}
+
+function create_unity_project(){
+    echo "Enter unity project name:"
+    read unity_project_name
+    mkdir $unity_project_name
+    cd $unity_project_name
+    mkdir Assets
+    mkdir Packages
+    create_project_settings
+}
+
+function create_project_settings(){
+    mkdir ProjectSettings
+    touch ProjectSettings/ProjectVersion.txt
+    echo "m_EditorVersion: 2020.3.25f1" >> ProjectSettings/ProjectVersion.txt
+    echo "m_EditorVersionWithRevision: 2020.3.25f1 (9b9180224418)" >> ProjectSettings/ProjectVersion.txt
+}
+
+function create_git_repo(){
+    touch .gitignore
+    curl https://raw.githubusercontent.com/github/gitignore/main/Unity.gitignore >> .gitignore
+    git init
+    git remote add origin https://contact526@gitlab.com/pocketduck/packages/$package_bundle.git
+    git add .
+    git commit -m "Initial commit"
+}
+
+function create_package(){
+    start_package
+    create_folders
+    create_package_json
+    create_git_repo
+}
+
+function create_upm(){
+    if [ -d "Assets" ]; then
+    echo "Assets folder found, continuing..."
+    echo "Creating package in $PWD"
+    cd Packages
+    create_package
+    else
+        echo "Assets folder not found, do you like to create a unity package in the current directory? y/n"
+        read must_create_project
+        if [ $must_create_project == "y" ]; then
+            create_unity_project
+            echo "Creating project in $PWD"
+            cd Packages
+            create_package
+        else
+            echo "Exiting..."
+            exit
+        fi
+    fi
+}
+
+create_upm
