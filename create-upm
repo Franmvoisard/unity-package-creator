@@ -1,7 +1,6 @@
 #!/bin/bash
 
 function start_package() {
-    echo "Welcome to the Unity Package Creator!"
     echo "Package Name:"
     read package_name
     echo "Package Version:"
@@ -92,6 +91,7 @@ function create_package(){
 }
 
 function create_upm(){
+    echo "Welcome to the Unity Package Creator!"
     if [ -d "Assets" ]; then
     echo "Assets folder found, continuing..."
     echo "Creating package in $PWD"
